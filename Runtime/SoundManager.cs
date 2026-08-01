@@ -15,6 +15,8 @@ namespace ProgramZer0.SoundSystem
 
         private Sound currentMusic = null;
         private Coroutine musicFadeCoroutine;
+        private bool musicMuted = false;
+        private bool allSoundsMuted = false;
 
         private void DLog(string message)
         {
@@ -29,33 +31,40 @@ namespace ProgramZer0.SoundSystem
                 s.source = gameObject.AddComponent<AudioSource>();
                 s.source.clip = s.clip;
                 s.source.loop = s.loop;
+                s.source.playOnAwake = false;
 
                 s.source.volume = s.volume;
                 s.source.pitch = s.pitch;
                 s.source.priority = s.priority;
             }
+
+            ApplyMuteStates();
             DLog("finished SM init");
         }
 
-        public float GetSoundMod() { return modSound; }
-
-        public void PlayIfAlreadyNotPlaying(string name)
+        private Sound FindSound(string name)
         {
             Sound s = Array.Find(sounds, sound => sound.name.Equals(name, StringComparison.OrdinalIgnoreCase));
             if (s == null)
-            {
                 Debug.LogWarning($"Sound '{name}' not found!");
-                return;
-            }
+            return s;
+        }
+
+        public float GetSoundMod() { return modSound; }
+        public float getSoundMusicMod() { return modMusicSound; }
+
+        public void PlayIfAlreadyNotPlaying(string name)
+        {
+            Sound s = FindSound(name);
+            if (s == null) return;
 
             if (s.source.isPlaying)
                 return;
 
-            float finalVolume = s.volume * (s.isMusic ? modMusicSound : modSound);
-
-            s.source.volume = finalVolume;
+            s.source.volume = s.volume * (s.isMusic ? modMusicSound : modSound);
             s.source.Play();
         }
+
         public void PlayRandomSound(string[] soundNames)
         {
             if (soundNames == null || soundNames.Length == 0)
@@ -64,54 +73,46 @@ namespace ProgramZer0.SoundSystem
                 return;
             }
 
-            string chosen = soundNames[UnityEngine.Random.Range(0, soundNames.Length)];
-            Play(chosen);
+            Play(soundNames[UnityEngine.Random.Range(0, soundNames.Length)]);
         }
+
         public void Play(string name)
         {
-            Sound s = Array.Find(sounds, sound => sound.name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            Sound s = FindSound(name);
+            if (s == null) return;
 
-            if (s == null)
-            {
-                Debug.LogWarning($"Sound '{name}' not found!");
-                return;
-            }
-
-            float finalVolume = s.volume * (s.isMusic ? modMusicSound : modSound);
-
-            s.source.volume = finalVolume;
+            s.source.volume = s.volume * (s.isMusic ? modMusicSound : modSound);
             DLog($"playing sound {name}");
             s.source.Play();
         }
 
         public void PlayRandomPitch(string name, float plus_minusP)
         {
-            Sound s = Array.Find(sounds, sound => sound.name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            Sound s = FindSound(name);
+            if (s == null) return;
 
-            if (s == null)
-            {
-                Debug.LogWarning($"Sound '{name}' not found!");
-                return;
-            }
-
-            float finalVolume = s.volume * (s.isMusic ? modMusicSound : modSound);
-            float finalPitch = s.pitch + UnityEngine.Random.Range((0 - plus_minusP), plus_minusP);
-
-            s.source.volume = finalVolume;
-            s.source.pitch = finalPitch;
+            s.source.volume = s.volume * (s.isMusic ? modMusicSound : modSound);
+            s.source.pitch = s.pitch + UnityEngine.Random.Range(-plus_minusP, plus_minusP);
             DLog($"playing sound {name}");
+            s.source.Play();
+        }
+
+        public void PlayEvenIfPlaying(string name)
+        {
+            Sound s = FindSound(name);
+            if (s == null) return;
+
+            if (s.source.isPlaying)
+                Stop(name);
+
+            s.source.volume = s.volume * (s.isMusic ? modMusicSound : modSound);
             s.source.Play();
         }
 
         public void FadeInSoundIfNotPlaying(string name, float fadeTime = 1f)
         {
-            Sound s = Array.Find(sounds, sound => sound.name.Equals(name, StringComparison.OrdinalIgnoreCase));
-
-            if (s == null)
-            {
-                Debug.LogWarning($"Sound '{name}' not found!");
-                return;
-            }
+            Sound s = FindSound(name);
+            if (s == null) return;
 
             if (s.source.isPlaying)
                 return;
@@ -121,25 +122,16 @@ namespace ProgramZer0.SoundSystem
 
         public void FadeInSound(string name, float fadeTime = 1f)
         {
-            Sound s = Array.Find(sounds, sound => sound.name.Equals(name, StringComparison.OrdinalIgnoreCase));
-
-            if (s == null)
-            {
-                Debug.LogWarning($"Sound '{name}' not found!");
-                return;
-            }
+            Sound s = FindSound(name);
+            if (s == null) return;
 
             StartCoroutine(FadeInCoroutine(s, fadeTime));
         }
+
         public void FadeOutSound(string name, float fadeTime = 1f)
         {
-            Sound s = Array.Find(sounds, sound => sound.name.Equals(name, StringComparison.OrdinalIgnoreCase));
-
-            if (s == null)
-            {
-                Debug.LogWarning($"Sound '{name}' not found!");
-                return;
-            }
+            Sound s = FindSound(name);
+            if (s == null) return;
 
             StartCoroutine(FadeOutCoroutine(s, fadeTime));
         }
@@ -162,6 +154,7 @@ namespace ProgramZer0.SoundSystem
             if (s == currentMusic)
                 currentMusic = null;
         }
+
         private IEnumerator FadeInCoroutine(Sound s, float fadeTime)
         {
             float targetVolume = s.volume * (s.isMusic ? modMusicSound : modSound);
@@ -170,19 +163,17 @@ namespace ProgramZer0.SoundSystem
             s.source.Play();
 
             float timer = 0f;
-
             while (timer < fadeTime)
             {
                 timer += Time.deltaTime;
                 float t = timer / fadeTime;
-
                 s.source.volume = Mathf.Lerp(0f, targetVolume, t);
-
                 yield return null;
             }
 
             s.source.volume = targetVolume;
         }
+
         public void PlayMusic(string name, float fadeTime = 1f)
         {
             Sound newMusic = Array.Find(sounds, sound => sound.name.Equals(name, StringComparison.OrdinalIgnoreCase) && sound.isMusic);
@@ -200,6 +191,7 @@ namespace ProgramZer0.SoundSystem
 
             musicFadeCoroutine = StartCoroutine(CrossfadeMusic(newMusic, fadeTime));
         }
+
         public void PlayRandomMusic(string[] musicNames, float fadeTime = 1f)
         {
             if (musicNames == null || musicNames.Length == 0)
@@ -208,13 +200,16 @@ namespace ProgramZer0.SoundSystem
                 return;
             }
 
-            string chosen = musicNames[UnityEngine.Random.Range(0, musicNames.Length)];
-            PlayMusic(chosen, fadeTime);
+            PlayMusic(musicNames[UnityEngine.Random.Range(0, musicNames.Length)], fadeTime);
         }
+
         private IEnumerator CrossfadeMusic(Sound newMusic, float fadeTime)
         {
             Sound oldMusic = currentMusic;
             currentMusic = newMusic;
+
+            float oldStartVolume = (oldMusic != null && oldMusic.source != null) ? oldMusic.source.volume : 0f;
+            float newTargetVolume = newMusic.volume * modMusicSound;
 
             if (newMusic != null)
             {
@@ -223,17 +218,16 @@ namespace ProgramZer0.SoundSystem
             }
 
             float timer = 0f;
-
             while (timer < fadeTime)
             {
                 timer += Time.deltaTime;
                 float t = timer / fadeTime;
 
                 if (oldMusic != null && oldMusic.source != null)
-                    oldMusic.source.volume = Mathf.Lerp(oldMusic.volume * modMusicSound, 0f, t);
+                    oldMusic.source.volume = Mathf.Lerp(oldStartVolume, 0f, t);
 
                 if (newMusic != null && newMusic.source != null)
-                    newMusic.source.volume = Mathf.Lerp(0f, newMusic.volume * modMusicSound, t);
+                    newMusic.source.volume = Mathf.Lerp(0f, newTargetVolume, t);
 
                 yield return null;
             }
@@ -245,19 +239,15 @@ namespace ProgramZer0.SoundSystem
             }
 
             if (newMusic != null && newMusic.source != null)
-                newMusic.source.volume = newMusic.volume * modMusicSound;
+                newMusic.source.volume = newTargetVolume;
 
             musicFadeCoroutine = null;
         }
+
         public void Stop(string name)
         {
-            Sound s = Array.Find(sounds, sound => sound.name.Equals(name, StringComparison.OrdinalIgnoreCase));
-
-            if (s == null)
-            {
-                Debug.LogWarning($"Sound '{name}' not found!");
-                return;
-            }
+            Sound s = FindSound(name);
+            if (s == null) return;
 
             s.source.Stop();
 
@@ -282,6 +272,7 @@ namespace ProgramZer0.SoundSystem
                 currentMusic = null;
             }
         }
+
         public string GetCurrentMusicName()
         {
             return currentMusic != null ? currentMusic.name : null;
@@ -290,34 +281,11 @@ namespace ProgramZer0.SoundSystem
         public void SetSoundMod(float vol)
         {
             DLog("setting sound");
-
             modSound = vol;
             foreach (Sound s in sounds)
             {
                 if (s != currentMusic)
                     s.source.volume = s.volume * modSound;
-            }
-        }
-
-        public void SetSoundVolume(string name, float _vol, bool refreshSound = false)
-        {
-            Sound s = Array.Find(sounds, sound => sound.name.Equals(name, StringComparison.OrdinalIgnoreCase));
-            if (s == null) return;
-
-            s.volume = _vol;
-            if (refreshSound)
-                SetSoundMod(modSound);
-        }
-
-        public void RefreshSingleMod(string name)
-        {
-            Sound s = Array.Find(sounds, sound => sound.name.Equals(name, StringComparison.OrdinalIgnoreCase));
-            if (s != currentMusic)
-                s.source.volume = s.volume * modSound;
-            else
-            {
-                if (currentMusic != null && currentMusic.source != null)
-                    currentMusic.source.volume = currentMusic.volume * modMusicSound;
             }
         }
 
@@ -329,31 +297,64 @@ namespace ProgramZer0.SoundSystem
                 currentMusic.source.volume = currentMusic.volume * modMusicSound;
         }
 
+        public void RefreshSingleMod(string name)
+        {
+            Sound s = FindSound(name);
+            if (s == null) return;
+
+            if (s != currentMusic)
+                s.source.volume = s.volume * modSound;
+            else if (currentMusic != null && currentMusic.source != null)
+                currentMusic.source.volume = currentMusic.volume * modMusicSound;
+        }
+
         public void RefreshSoundMods()
         {
             SetSoundMod(modSound);
             SetSoundMusicMod(modMusicSound);
         }
 
-        public float getSoundMusicMod() { return modMusicSound; }
-
-        public void PlayEvenIfPlaying(string name)
+        public void SetSoundVolume(string name, float _vol, bool refreshSound = false)
         {
-            Sound s = Array.Find(sounds, sound => sound.name.Equals(name, StringComparison.OrdinalIgnoreCase));
-            if (s == null)
-            {
-                Debug.LogWarning($"Sound '{name}' not found!");
-                return;
-            }
+            Sound s = FindSound(name);
+            if (s == null) return;
 
-            if (s.source.isPlaying)
-                Stop(name);
-
-            float finalVolume = s.volume * (s.isMusic ? modMusicSound : modSound);
-
-            s.source.volume = finalVolume;
-            s.source.Play();
+            s.volume = _vol;
+            if (refreshSound)
+                SetSoundMod(modSound);
         }
 
+        // --- Mute ---
+
+        public void SetMuteMusic(bool val)
+        {
+            musicMuted = val;
+            DLog($"music muted: {val}");
+            ApplyMuteStates();
+        }
+
+        public void SetMuteAllSounds(bool val)
+        {
+            allSoundsMuted = val;
+            DLog($"all sounds muted: {val}");
+            ApplyMuteStates();
+        }
+
+        public bool GetMuteMusic() { return musicMuted; }
+        public bool GetMuteAllSounds() { return allSoundsMuted; }
+
+        // Applies the current mute flags to every AudioSource's native `mute` property.
+        // Using AudioSource.mute (instead of zeroing out volume) means a toggle takes
+        // effect immediately on whatever's currently playing - including a source that's
+        // mid fade-in/out or mid music-crossfade - without clashing with the volume values
+        // those coroutines are actively animating frame to frame.
+        private void ApplyMuteStates()
+        {
+            foreach (Sound s in sounds)
+            {
+                if (s.source == null) continue;
+                s.source.mute = allSoundsMuted || (s.isMusic && musicMuted);
+            }
+        }
     }
 }
