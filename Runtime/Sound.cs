@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace ProgramZer0.SoundSystem
+namespace ZeroDayGaming.SoundSystem
 {
     [System.Serializable]
     public class Sound

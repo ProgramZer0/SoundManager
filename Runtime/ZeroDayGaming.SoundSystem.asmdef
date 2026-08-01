@@ -1,0 +1,14 @@
+{
+    "name": "ZeroDayGaming.SoundSystem",
+    "rootNamespace": "ZeroDayGaming.SoundSystem",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

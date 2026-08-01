@@ -1,11 +1,11 @@
 {
-  "name": "com.ProgramZer0.soundsystem",
+  "name": "com.zerodaygaming.soundsystem",
   "version": "1.0.0",
   "displayName": "Sound System",
   "description": "Lightweight audio manager for SFX and music: named-sound lookup, fading, crossfading music, per-category volume mixing (SFX vs music), and random-pitch/random-clip playback.",
   "unity": "2022.3",
   "author": {
-    "name": "ProgramZer0"
+    "name": "ZeroDayGaming"
   },
   "keywords": [
     "audio",
