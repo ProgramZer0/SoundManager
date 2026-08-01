@@ -1,6 +1,6 @@
 {
-    "name": "ZeroDayGaming.SoundSystem",
-    "rootNamespace": "ZeroDayGaming.SoundSystem",
+    "name": "ProgramZer0.SoundSystem",
+    "rootNamespace": "ProgramZer0.SoundSystem",
     "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],

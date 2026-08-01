@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-namespace ZeroDayGaming.SoundSystem
+namespace ProgramZer0.SoundSystem
 {
     public class SoundManager : MonoBehaviour
     {

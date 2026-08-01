@@ -22,7 +22,7 @@ random-clip playback.
 2. In `MyGame/Packages/manifest.json`, add a line under `"dependencies"`:
 
    ```json
-   "com.zerodaygaming.soundsystem": "file:../../SoundSystem"
+   "com.programzer0.soundsystem": "file:../../SoundSystem"
    ```
 
    (adjust the relative path to wherever you actually put the folder)
@@ -37,7 +37,7 @@ multiple game repos without keeping folders in sync manually):**
 2. In any project's `manifest.json`:
 
    ```json
-   "com.zerodaygaming.soundsystem": "https://github.com/yourname/soundsystem.git"
+   "com.programzer0.soundsystem": "https://github.com/ProgramZer0/SoundManager.git"
    ```
 
 3. Tag releases (`v1.0.0`, `v1.1.0`, ...) and pin a project to one with
@@ -54,7 +54,7 @@ multiple game repos without keeping folders in sync manually):**
 3. Call it from anywhere:
 
    ```csharp
-   using ZeroDayGaming.SoundSystem;
+   using ProgramZer0.SoundSystem;
 
    soundManager.Play("Jump");
    soundManager.PlayMusic("MainTheme", fadeTime: 1.5f);
@@ -71,7 +71,7 @@ multiple game repos without keeping folders in sync manually):**
   exposing a `UnityEvent` or an interface the game project implements, rather
   than a direct reference — that keeps the package decoupled from any one
   game's code.
-- Both classes are wrapped in the `ZeroDayGaming.SoundSystem` namespace so they won't
+- Both classes are wrapped in the `ProgramZer0.SoundSystem` namespace so they won't
   collide with any other `Sound`/`SoundManager` class you (or an asset store
   package) might have in a different project.
 
