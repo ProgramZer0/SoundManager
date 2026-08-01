@@ -1,0 +1,14 @@
+{
+    "name": "ProgramZer0.SoundSystem",
+    "rootNamespace": "ProgramZer0.SoundSystem",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
